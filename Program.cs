@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NetCoreIdentity.Data;
 using NetCoreIdentity.Models;
+using NetCoreIdentity.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,5 +47,16 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    await RoleSeeder.SeedRolesAsync(roleManager);
+    await IdentitySeeder.SeedAdminUserAsync(userManager, roleManager);
+}
 
 app.Run();

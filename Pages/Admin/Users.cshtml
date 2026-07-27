@@ -1,0 +1,43 @@
+﻿@page
+@model NetCoreIdentity.Pages.Admin.UsersModel
+
+<h2>User Management</h2>
+
+<table class="table table-bordered table-striped">
+
+  <thead class="table-dark">
+<tr>
+    <th>Full Name</th>
+    <th>Email</th>
+    <th>Role</th>
+    <th>Created Date</th>
+    <th>Action</th>
+</tr>
+</thead>
+
+  <tbody>
+
+@foreach (var user in Model.Users)
+{
+    <tr>
+        <td>@user.FullName</td>
+        <td>@user.Email</td>
+        <td>
+            <span class="badge bg-success">
+                @user.Role
+            </span>
+        </td>
+        <td>@user.CreatedDate.ToString("dd-MMM-yyyy")</td>
+        <td>
+            <a asp-page="/Admin/EditUser"
+               asp-route-id="@user.Id"
+               class="btn btn-warning btn-sm">
+                Edit
+            </a>
+        </td>
+    </tr>
+}
+
+</tbody>
+
+</table>
