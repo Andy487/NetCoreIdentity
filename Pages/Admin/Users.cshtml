@@ -2,9 +2,13 @@
 @model NetCoreIdentity.Pages.Admin.UsersModel
 
 <h2>User Management</h2>
-
+<div class="mb-3">
+    <a asp-page="/Admin/CreateUser"
+       class="btn btn-primary">
+        + Create User
+    </a>
+</div>
 <table class="table table-bordered table-striped">
-
   <thead class="table-dark">
 <tr>
     <th>Full Name</th>
@@ -14,9 +18,7 @@
     <th>Action</th>
 </tr>
 </thead>
-
   <tbody>
-
 @foreach (var user in Model.Users)
 {
     <tr>
