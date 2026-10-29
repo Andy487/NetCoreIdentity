@@ -1,0 +1,76 @@
+﻿@page
+@model NetCoreIdentity.Pages.Admin.DeleteUserModel
+
+@{
+    ViewData["Title"] = "Delete User";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0">Delete User</h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="alert alert-warning">
+                <strong>Warning!</strong>
+                This action will permanently delete this user.
+            </div>
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3">
+            </div>
+
+            <dl class="row">
+
+                <dt class="col-sm-3">
+                    Full Name
+                </dt>
+
+                <dd class="col-sm-9">
+                    @Model.UserToDelete.FullName
+                </dd>
+
+                <dt class="col-sm-3">
+                    Email
+                </dt>
+
+                <dd class="col-sm-9">
+                    @Model.UserToDelete.Email
+                </dd>
+
+                <dt class="col-sm-3">
+                    User Name
+                </dt>
+
+                <dd class="col-sm-9">
+                    @Model.UserToDelete.UserName
+                </dd>
+
+            </dl>
+
+            <form method="post">
+
+                <input type="hidden"
+                       asp-for="Id" />
+
+                <button type="submit"
+                        class="btn btn-danger">
+                    Confirm Delete
+                </button>
+
+                <a asp-page="/Admin/Users"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

@@ -10,7 +10,8 @@ namespace NetCoreIdentity.Seed
             {
                 "Admin",
                 "Manager",
-                "Employee"
+                "Employee",
+                "Student"
             };
 
             foreach (var role in roles)

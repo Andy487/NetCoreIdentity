@@ -8,10 +8,12 @@ namespace NetCoreIdentity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -25,6 +27,26 @@ namespace NetCoreIdentity.Pages.Account
         {
             if (!ModelState.IsValid)
                 return Page();
+
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Invalid login attempt.");
+
+                return Page();
+            }
+
+            if (!user.IsActive)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Your account has been deactivated. Please contact the administrator.");
+
+                return Page();
+            }
 
             var result = await _signInManager.PasswordSignInAsync(
                 Input.Email,
