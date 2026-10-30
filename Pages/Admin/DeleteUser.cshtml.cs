@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +55,45 @@ namespace NetCoreIdentity.Pages.Admin
             if (user == null)
             {
                 return NotFound();
+            }
+
+            // Prevent an Admin from deleting their own account
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (user.Id == currentUserId)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "You cannot delete your own account.");
+
+                UserToDelete = user;
+
+                return Page();
+            }
+
+            // Check whether the target user is an active Admin
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            bool isActiveAdmin =
+                user.IsActive && userRoles.Contains("Admin");
+
+            if (isActiveAdmin)
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+
+                int activeAdminCount = admins.Count(u => u.IsActive);
+
+                // Prevent deletion of the last active Admin
+                if (activeAdminCount <= 1)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "You cannot delete the last active System Administrator.");
+
+                    UserToDelete = user;
+
+                    return Page();
+                }
             }
 
             var result = await _userManager.DeleteAsync(user);

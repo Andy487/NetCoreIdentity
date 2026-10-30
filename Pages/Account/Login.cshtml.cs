@@ -23,6 +23,7 @@ namespace NetCoreIdentity.Pages.Account
         {
         }
 
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -49,19 +50,31 @@ namespace NetCoreIdentity.Pages.Account
             }
 
             var result = await _signInManager.PasswordSignInAsync(
-                Input.Email,
+                user.UserName!,
                 Input.Password,
                 Input.RememberMe,
-                lockoutOnFailure: false);
+                lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
                 return RedirectToPage("/Dashboard");
             }
 
-            ModelState.AddModelError("", "Invalid Email or Password");
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Your account is temporarily locked due to multiple failed login attempts. Please try again after 5 minutes.");
+
+                return Page();
+            }
+
+            ModelState.AddModelError(
+                string.Empty,
+                "Invalid Email or Password");
 
             return Page();
         }
+
     }
 }

@@ -18,5 +18,6 @@ namespace NetCoreIdentity.Models
         [Required]
         [Display(Name = "Role")]
         public string Role { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
     }
 }

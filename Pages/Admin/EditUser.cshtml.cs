@@ -47,13 +47,15 @@ namespace NetCoreIdentity.Pages.Admin
                 Id = user.Id,
                 FullName = user.FullName,
                 Email = user.Email ?? string.Empty,
-                Role = userRoles.FirstOrDefault() ?? string.Empty
+                Role = userRoles.FirstOrDefault() ?? string.Empty,
+                IsActive = user.IsActive
             };
 
             await LoadRoles();
 
             return Page();
         }
+
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -71,9 +73,35 @@ namespace NetCoreIdentity.Pages.Admin
                 return NotFound();
             }
 
+            var currentRoles = await _userManager.GetRolesAsync(user);
+
+            bool isCurrentlyActiveAdmin =
+                user.IsActive && currentRoles.Contains("Admin");
+
+            bool removingAdminProtection =
+                !UserVM.IsActive || UserVM.Role != "Admin";
+
+            // Protect the last active Admin account
+            if (isCurrentlyActiveAdmin && removingAdminProtection)
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+
+                int activeAdminCount = admins.Count(u => u.IsActive);
+
+                if (activeAdminCount <= 1)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "You cannot deactivate or remove the Admin role from the last active System Administrator.");
+
+                    return Page();
+                }
+            }
+
             user.FullName = UserVM.FullName;
             user.Email = UserVM.Email;
             user.UserName = UserVM.Email;
+            user.IsActive = UserVM.IsActive;
 
             var updateResult = await _userManager.UpdateAsync(user);
 
@@ -86,8 +114,6 @@ namespace NetCoreIdentity.Pages.Admin
 
                 return Page();
             }
-
-            var currentRoles = await _userManager.GetRolesAsync(user);
 
             if (currentRoles.Any())
             {
@@ -122,6 +148,7 @@ namespace NetCoreIdentity.Pages.Admin
 
             return RedirectToPage("/Admin/Users");
         }
+
 
         private async Task LoadRoles()
         {

@@ -14,9 +14,15 @@ namespace NetCoreIdentity.Pages.Account
             _signInManager = signInManager;
         }
 
-        public async Task<IActionResult> OnGet()
+        public IActionResult OnGet()
+        {
+            return RedirectToPage("/Index");
+        }
+
+        public async Task<IActionResult> OnPost()
         {
             await _signInManager.SignOutAsync();
+
             return RedirectToPage("/Account/Login");
         }
     }

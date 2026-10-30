@@ -68,6 +68,20 @@
                           class="text-danger">
                     </span>
                 </div>
+                
+<div class="mb-3 form-check">
+    <input asp-for="UserVM.IsActive"
+           class="form-check-input" />
+
+    <label asp-for="UserVM.IsActive"
+           class="form-check-label">
+    </label>
+
+    <span asp-validation-for="UserVM.IsActive"
+          class="text-danger">
+    </span>
+</div>
+
 
                 <button type="submit"
                         class="btn btn-success">

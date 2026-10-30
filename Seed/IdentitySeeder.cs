@@ -29,7 +29,8 @@ namespace NetCoreIdentity.Seed
                     Email = adminEmail,
                     FullName = "System Administrator",
                     EmailConfirmed = true,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    IsActive = true,
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);

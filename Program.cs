@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using NetCoreIdentity.Data;
 using NetCoreIdentity.Models;
 using NetCoreIdentity.Seed;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,44 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+builder.Services.PostConfigure<CookieAuthenticationOptions>(
+    IdentityConstants.ApplicationScheme, options =>
+{
+    var existingHandler = options.Events.OnValidatePrincipal;
+
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        // Preserve Identity's existing cookie/security-stamp validation.
+        if (existingHandler != null)
+        {
+            await existingHandler(context);
+        }
+
+        // Stop if the existing validation rejected the principal.
+        if (context.Principal?.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var userManager = context.HttpContext.RequestServices
+            .GetRequiredService<UserManager<ApplicationUser>>();
+
+        var user = await userManager.GetUserAsync(context.Principal);
+
+        if (user == null || !user.IsActive)
+        {
+            context.RejectPrincipal();
+
+            await context.HttpContext.SignOutAsync(
+                IdentityConstants.ApplicationScheme);
+        }
+    };
+});
 
 var app = builder.Build();
 
@@ -43,7 +83,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
