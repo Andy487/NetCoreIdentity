@@ -1,80 +1,62 @@
-using Microsoft.AspNetCore.Identity;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NetCoreIdentity.Models;
+using NetCoreIdentity.Services;
 
 namespace NetCoreIdentity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAccountService _accountService;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        public LoginModel(IAccountService accountService)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
+            _accountService = accountService;
         }
 
         [BindProperty]
-        public LoginViewModel Input { get; set; }
+        public LoginViewModel Input { get; set; } = new();
 
         public void OnGet()
         {
         }
-
 
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
                 return Page();
 
-            var user = await _userManager.FindByEmailAsync(Input.Email);
-
-            if (user == null)
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Invalid login attempt.");
-
-                return Page();
-            }
-
-            if (!user.IsActive)
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Your account has been deactivated. Please contact the administrator.");
-
-                return Page();
-            }
-
-            var result = await _signInManager.PasswordSignInAsync(
-                user.UserName!,
+            var result = await _accountService.LoginAsync(
+                Input.Email,
                 Input.Password,
-                Input.RememberMe,
-                lockoutOnFailure: true);
+                Input.RememberMe);
 
-            if (result.Succeeded)
+            switch (result)
             {
-                return RedirectToPage("/Dashboard");
+                case LoginResult.Success:
+                    return RedirectToPage("/Dashboard");
+
+                case LoginResult.Deactivated:
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Your account has been deactivated. Please contact the administrator.");
+                    break;
+
+                case LoginResult.LockedOut:
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Your account is temporarily locked due to multiple failed login attempts. Please try again after 5 minutes.");
+                    break;
+
+                default:
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Invalid Email or Password");
+                    break;
             }
-
-            if (result.IsLockedOut)
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Your account is temporarily locked due to multiple failed login attempts. Please try again after 5 minutes.");
-
-                return Page();
-            }
-
-            ModelState.AddModelError(
-                string.Empty,
-                "Invalid Email or Password");
 
             return Page();
         }
-
     }
 }

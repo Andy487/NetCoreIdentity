@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NetCoreIdentity.Data;
 using NetCoreIdentity.Models;
 using NetCoreIdentity.Seed;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using NetCoreIdentity.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // Add services to the container.
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddRazorPages();
 builder.Services.ConfigureApplicationCookie(options =>
 {
